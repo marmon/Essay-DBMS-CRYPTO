@@ -23,8 +23,11 @@
 pokazuje widzę w praktyce na podstawie realnege przypadku zastosowania pakietu}
 
 \section{Wprowadzenie do pakietu}
-Pakiet DBMS\_CRYPTO to, jak można zgadywać po nazwie, pakiet realizujący pewne
-algorytmy z zakresu kryptografii. Można wykorzystywać pakiet do szyfrowania i
+TODO: to co napisane jest w tym paragrafie jest to wyrzucenia/rozrzucenia po
+innych sekcjach
+
+ Pakiet DBMS\_CRYPTO to, jak można zgadywać po nazwie, pakiet
+realizujący pewne algorytmy z zakresu kryptografii. Można wykorzystywać pakiet do szyfrowania i
 deszyfrowania typów wbudowanych bazy Oracle włącznie z RAW, BLOB, CLOB. Pakiet
 posiada algorytm szyfru symetrycznego, który jest zgodny z obecnym standardem, a
 więc uważany jest za bezpieczny. Mowa tu o standardzie AES i algorytmie
@@ -32,8 +35,47 @@ Rijndael, który kryje się pod standardem. Szyfr symetryczny jest szybki i nada
 się do szyfrowania bazy danych. Pakiet nie posiada natomiast żadnych szyfrów
 asymetrycznych.
 
+\section{Obługiwane typy danych}
 
-\section{Mechanizm \ldots}
+\subsection{Jak szyfrować VARCHAR2?}
+TODO: Opis tego co nalezy zrobić żeby szyfrować VARCHAR2.
+
+\section{Szyfrowanie symetryczne}
+TODO: co to jest, jakie wady i zalety
+
+
+
+\subsection{Lista algorytmów szyfrujących}
+TODO: Tutaj lista algorytmów
+
+\subsection{Tryby wiązania bloków}
+Obsługiwane tryby wiązania bloków zaszyfrowanych to:
+\begin{description}
+\item[skrot trybu] opis 
+\end{description}
+
+TODO: linki do wiki
+
+\subsection{Generowanie klucza}
+TODO: Opis tego że pakiet nie generuje sam klucza ale może wygenerować sekwencje
+ losową bajtów. Wzmiana o pakiecie DBMS\_RANDOM który może być do tego bardziej
+ przydatny
+
+\subsection{Transport i przechowywanie klucza}
+TODO: Opis tego że pakiet nie daje niczego do transportu klucza i transport
+klucza od strony klienta jest niebezpieczny
+
+\section{Funkcje skrótu}
+TODO: co to jest i do czego służy, 3 cechy funkcji skrótu
+
+\subsection{Dostępne funkcje}
+TODO: lista dostępnych funkcji skrótu, dla każdej krótkie zdanie o
+bezpieczeństwie
+
+\subsection{Zastosowanie funkcji skrótu}
+TODO: opis zastosowania, np. zapewnienie INTEGRALNOŚCI oraz chronienie haseł
+userów (co będzie omówionym case'em wraz z przykładem i struktura danych)
+
 
 
 \section{Przypadek użycia - zabezpieczenie haseł użytkowników}
@@ -55,5 +97,13 @@ begin
 end;
 \end{lstlisting}
   
+
+\section{Wady i zalety pakietu}
+TODO: opis tego że posiada w miare ok funkcje szyfrujace, nie ma natomiast
+dobrej funkcji skrótu, powinien miec SHA-2
+Poza tym wady takie jak to że nie generuje klucza 
+
+\section{Słowo końcowe}
+TODO: napisać jakieś ładne dwa zdania
 
 \end{document}
