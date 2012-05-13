@@ -4,7 +4,9 @@
 
 \usepackage[utf8]{inputenc} % Kodowanie UTF8
 \usepackage{polski} % Wsparcie dla PL
-
+\usepackage{listings}
+\usepackage{color}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \usepackage{hyperref} % dla linkowania do stron www
 
 \begin{document}
@@ -21,10 +23,37 @@
 pokazuje widzę w praktyce na podstawie realnege przypadku zastosowania pakietu}
 
 \section{Wprowadzenie do pakietu}
+Pakiet DBMS\_CRYPTO to, jak można zgadywać po nazwie, pakiet realizujący pewne
+algorytmy z zakresu kryptografii. Można wykorzystywać pakiet do szyfrowania i
+deszyfrowania typów wbudowanych bazy Oracle włącznie z RAW, BLOB, CLOB. Pakiet
+posiada algorytm szyfru symetrycznego, który jest zgodny z obecnym standardem, a
+więc uważany jest za bezpieczny. Mowa tu o standardzie AES i algorytmie
+Rijndael, który kryje się pod standardem. Szyfr symetryczny jest szybki i nadaje
+się do szyfrowania bazy danych. Pakiet nie posiada natomiast żadnych szyfrów
+asymetrycznych.
+
 
 \section{Mechanizm \ldots}
 
+
 \section{Przypadek użycia - zabezpieczenie haseł użytkowników}
+  
+  \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = To jest opis kodu,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}} 
+\begin{lstlisting}
+CREATE OR REPLACE TRIGGER "KBD2A07"."PROJEKTY_AUTOINC" 
+   before insert on "KBD2A07"."PROJEKTY" 
+   for each row 
+begin  
+   if inserting then 
+      if :NEW."ID_PROJEKTU" is null then 
+         select PROJEKTY_ID_SEQ.nextval into :NEW."ID_PROJEKTU" from dual; 
+      end if; 
+   end if; 
+end;
+\end{lstlisting}
   
 
 \end{document}
