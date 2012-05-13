@@ -1,0 +1,6 @@
+tmp/
+*.pdf
+*.gz
+.project
+.texlipse
+.settings/
