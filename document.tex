@@ -12,57 +12,175 @@
 \begin{document}
 \title{Esej na temat pakietu DBMS\_CRYPTO}
 \author{Łukasz Szewczyk\\
-		Marek Lewandowski }
+Marek Lewandowski }
 \date{\today}
 
 
 
 \maketitle
 
-\abstract{Esej wprowadza w najważniejsze zagadnienia pakietu, a następnie
-pokazuje widzę w praktyce na podstawie realnege przypadku zastosowania pakietu}
+\abstract{Esej wprowadza w najważniejsze zagadnienia pakietu, a
+następnie
+pokazuje widzę w praktyce na podstawie realnege przypadku zastosowania
+pakietu}
 
 \section{Wprowadzenie do pakietu}
-TODO: to co napisane jest w tym paragrafie jest to wyrzucenia/rozrzucenia po
-innych sekcjach
+%TODO: to co napisane jest w tym paragrafie jest to wyrzucenia/rozrzucenia
+po
+%innych sekcjach
+Pakiet DBMS\_CRYPTO zapewnia interfejs do szyfrowania i odszyfrowywania
+danych w bazie danych oraz może być używany wraz z programami PL\/SQL
+komunikującymi się przez sieć. Pakiet zapewnia wsparcie dla algorytmów
+szyfrujących, które są uznane przez National Institute of Standards and
+Technology, a jest to algorytm Rijndael spełniajacy standard AES. Gorzej
+jest natomiast z algorytmami hashującymi, ponieważ pakiet nie zapewnia
+wsparcia dla SHA-2, tylko dla SHA-1, które zostało już złamane, więc
+nie powinno być uznawane za realizujące najwyższy możliwy poziom
+bezpieczeństwa. Pakiet nie wspiera szyfrowania asymetrycznego oraz nie
+generuje samemu kluczy dla algorytmów symetrycznych. Należy je
+dostarczyć do funkcji pakietu samemu. Można jednak skorzystać z funkcji
+pakietu do utworzenia klucza. Pakiet DBMS\_CRYPTO powstał jako zastępca
+pakietu DBMS\_OBFUSCATION\_TOOLKIT, który jest już przestarzały ze
+względu na bezpieczeństwo algorytmów i nie powinien być już używany.
 
- Pakiet DBMS\_CRYPTO to, jak można zgadywać po nazwie, pakiet
-realizujący pewne algorytmy z zakresu kryptografii. Można wykorzystywać pakiet do szyfrowania i
-deszyfrowania typów wbudowanych bazy Oracle włącznie z RAW, BLOB, CLOB. Pakiet
-posiada algorytm szyfru symetrycznego, który jest zgodny z obecnym standardem, a
-więc uważany jest za bezpieczny. Mowa tu o standardzie AES i algorytmie
-Rijndael, który kryje się pod standardem. Szyfr symetryczny jest szybki i nadaje
-się do szyfrowania bazy danych. Pakiet nie posiada natomiast żadnych szyfrów
-asymetrycznych.
+% Pakiet DBMS\_CRYPTO to, jak można zgadywać po nazwie, pakiet
+% realizujący pewne algorytmy z zakresu kryptografii. Można
+%wykorzystywać pakiet do szyfrowania i
+% deszyfrowania typów wbudowanych bazy Oracle włącznie z RAW, BLOB,
+%CLOB. Pakiet
+% posiada algorytm szyfru symetrycznego, który jest zgodny z obecnym
+%standardem, a
+% więc uważany jest za bezpieczny. Mowa tu o standardzie AES i
+%algorytmie
+% Rijndael, który kryje się pod standardem. Szyfr symetryczny jest szybki
+%i nadaje
+% się do szyfrowania bazy danych. Pakiet nie posiada natomiast żadnych
+%szyfrów
+% asymetrycznych.
 
 \section{Obługiwane typy danych}
+Funkcje pakietu operują na następujących typach danych: RAW, BLOB, CLOB.
 
 \subsection{Jak szyfrować VARCHAR2?}
-TODO: Opis tego co nalezy zrobić żeby szyfrować VARCHAR2.
+%TODO: Opis tego co nalezy zrobić żeby szyfrować VARCHAR2.
+%you must convert it to the uniform database character set AL32UTF8, and
+%then convert it to the RAW datatype. After 
+%performing these conversions, you can then encrypt it with the DBMS_CRYPTO
+%package.
+
+Aby móc korzystać z funkcji pakietu dla typu VARCHAR2 należy wykonać
+dwa kroki przygotowawcze.
+\begin{enumerate}
+	\item Należy zmienić kodowanie znaków na AL32UTF8
+	\item Skonwertować otrzymany wynik na typ RAW
+\end{enumerate}
+Do wykonania tych czynności możemy posłużyć się pakietem UTL\_I18N.
+ \lstset{language=SQL, basicstyle=\footnotesize, 
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = konwersja VARCHAR2 do RAW,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+UTL_I18N.STRING_TO_RAW (string, 'AL32UTF8');
+\end{lstlisting}
+
+Proces odwrotny jest analogiczny, konwertujemy typ RAW na VARCHAR2, który
+będzie kodowany w AL32UTF8, a następnie zmieniamy kodowanie na takie
+jakie chcemy. Również tutaj możemy skorzystać z pakietu UTL\_I18N
+podając za pierwszy argument typ RAW, a drugi nazwę typu kodowania.
+
+ \lstset{language=SQL, basicstyle=\footnotesize, 
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = konwersja z RAW do VARCHAR2 o kodowaniu utf8,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+UTL_I18N.RAW_TO_CHAR (data, 'utf8');
+\end{lstlisting}
 
 \section{Szyfrowanie symetryczne}
-TODO: co to jest, jakie wady i zalety
+%TODO: co to jest, jakie wady i zalety
+Szyfrowanie symetryczne to takie, w którym używamy jest ten sam klucz do
+szyfrowania danych oraz do odszyfrowywania zaszyfrowanych danych. Klucz
+powinien być wygenerowany z pseudolosowego generatora, który używa
+źródła o dużej entropii do generowania liczb. Przykładem szyfrów
+symetrycznych jest: DES, 3DES, Twofish, Serpent, IDEA. Dane dzielone są na
+bloki, które podlegają szyfrowaniu. Różne algorytmy używają różnej
+wielkości bloków. AES używa bloków o długości 128 bitów.
+TODO dodać linki do tych szyfrów
+\item[]  
+\paragraph{ Główną zaletą} szyfrowania symetrycznego jest to, że to
+szyfrowanie jest o wiele szybsze w porównaniu do szyfrów asymetrycznych i
+jest równie bezpieczne zakładając, że poprawnie realizowana jest
+polityka bezpieczeństwa klucza.
 
 
+\paragraph{ Główną wadą} jest to, że całe bezpieczeństwo opiera się
+na tajności klucza, a więc jego transport jest bardzo wrażliwym
+elementem całego systemu. Wymóg bezpiecznego wymieniania kluczy jest
+zatem pewnym obciążeniem. Oprócz tego znana jest całkowita liczba
+wszystkich kluczy.
 
-\subsection{Lista algorytmów szyfrujących}
-TODO: Tutaj lista algorytmów
+
+%\subsection{Lista algorytmów szyfrujących}
+%TODO: Tutaj lista algorytmów
 
 \subsection{Tryby wiązania bloków}
-Obsługiwane tryby wiązania bloków zaszyfrowanych to:
+Bloki w algorytmach szyfrujących mogą być szyfrowane w różny sposób.
+Nazywa się to trybami łączenia bloków, np. tak aby blok był zależny
+od poprzedniego bloku. Pakiet DBMS\_CRYPTO realizuje cztery główne tryby
+łączenia bloków.
+Są to:
+
 \begin{description}
-\item[skrot trybu] opis 
+\item[ECB] Elektronic Codebook - każdy blok jest szyfrowany niezależnie
+\item[CBC] Cipher Block Chaining - następny blok do zaszyfrowania jest
+XOR'owany z poprzednio zaszyfrowanym blokiem
+\item[CFB] Cipher-Feedback - pozwala na szyfrowanie danych mniejszych niż
+rozmiar bloku
+\item[OFB] Output Feedback - szyfr blokowy używany jest do wygenerowania
+pseudolosowego ciągu danych, który następnie pełni role strumienia
+szyfrującego, mieszanego z danymi za pomocą funkcji XOR
 \end{description}
 
 TODO: linki do wiki
 
 \subsection{Generowanie klucza}
-TODO: Opis tego że pakiet nie generuje sam klucza ale może wygenerować sekwencje
- losową bajtów. Wzmiana o pakiecie DBMS\_RANDOM który może być do tego bardziej
+TODO: Opis tego że pakiet nie generuje sam klucza ale może wygenerować
+sekwencje
+ losową bajtów. Wzmiana o pakiecie DBMS\_RANDOM który może być do tego
+ bardziej
  przydatny
 
+Pakiet DBMS\_CRYPTO nie generuje samemu klucza. Można natomiast
+skorzystać z funkcji \emph{RANDOMBYTES}, która wygeneruje losowy ciąg
+bajtów o zadanej długości. Funkcja \emph{RANDOMBYTES} bazuje na RSA
+X9.31 PRNG (Pseudo-RandomNumber Generator) i używa źródła entropii z
+parametru SQLNET.CRYPTO\_SEED w pliku sqlnet.ora. Wartością domyślną
+parametru jest:
+
+ \lstset{language=SQL, basicstyle=\footnotesize, 
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = domyślna wartość inicjalizacyjna generator,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+qwertyuiopasdfghjkl;zxcvbnm,.s1
+\end{lstlisting}
+
+\lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = Kod generujący 256 bitowy klucz,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+DECLARE
+dlugosc_klucza NUMBER := 256/8; -- 256 bitow (32 bajty)
+klucz_raw RAW (32); -- 256 bitowy klucz
+BEGIN
+  klucz_raw := DBMS_CRYPTO.RANDOMBYTES(dlugosc_klucza);
+END;
+\end{lstlisting}
+
 \subsection{Transport i przechowywanie klucza}
-TODO: Opis tego że pakiet nie daje niczego do transportu klucza i transport
+TODO: Opis tego że pakiet nie daje niczego do transportu klucza i
+transport
 klucza od strony klienta jest niebezpieczny
 
 \section{Funkcje skrótu}
@@ -73,8 +191,10 @@ TODO: lista dostępnych funkcji skrótu, dla każdej krótkie zdanie o
 bezpieczeństwie
 
 \subsection{Zastosowanie funkcji skrótu}
-TODO: opis zastosowania, np. zapewnienie INTEGRALNOŚCI oraz chronienie haseł
-userów (co będzie omówionym case'em wraz z przykładem i struktura danych)
+TODO: opis zastosowania, np. zapewnienie INTEGRALNOŚCI oraz chronienie
+haseł
+userów (co będzie omówionym case'em wraz z przykładem i struktura
+danych)
 
 
 
@@ -83,25 +203,26 @@ userów (co będzie omówionym case'em wraz z przykładem i struktura danych)
   \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
 numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
  caption = To jest opis kodu,
-frame=shadowbox, rulesepcolor=\color{SkyBlue}} 
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
 \begin{lstlisting}
-CREATE OR REPLACE TRIGGER "KBD2A07"."PROJEKTY_AUTOINC" 
-   before insert on "KBD2A07"."PROJEKTY" 
-   for each row 
-begin  
-   if inserting then 
-      if :NEW."ID_PROJEKTU" is null then 
-         select PROJEKTY_ID_SEQ.nextval into :NEW."ID_PROJEKTU" from dual; 
-      end if; 
-   end if; 
+CREATE OR REPLACE TRIGGER "KBD2A07"."PROJEKTY_AUTOINC"
+   before insert on "KBD2A07"."PROJEKTY"
+   for each row
+begin
+   if inserting then
+      if :NEW."ID_PROJEKTU" is null then
+         select PROJEKTY_ID_SEQ.nextval into :NEW."ID_PROJEKTU" from dual;
+      end if;
+   end if;
 end;
 \end{lstlisting}
   
 
 \section{Wady i zalety pakietu}
-TODO: opis tego że posiada w miare ok funkcje szyfrujace, nie ma natomiast
+TODO: opis tego że posiada w miare ok funkcje szyfrujace, nie ma
+natomiast
 dobrej funkcji skrótu, powinien miec SHA-2
-Poza tym wady takie jak to że nie generuje klucza 
+Poza tym wady takie jak to że nie generuje klucza
 
 \section{Słowo końcowe}
 TODO: napisać jakieś ładne dwa zdania
