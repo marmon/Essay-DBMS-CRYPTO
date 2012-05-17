@@ -203,6 +203,24 @@ Własności funkcji skrótu:
  jest poprawność tego hasła przez porównanie otrzymanego skrótu z tym zapisanym
  w bazie danych.
  
+   \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = Testowa tabela,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+CREATE TABLE SKROTY 
+(
+ID_UZYTKOWNIKA VARCHAR2(20) NOT NULL 
+, SKROT RAW(20) NOT NULL 
+, CONSTRAINT SKROTY_PK PRIMARY KEY 
+(
+ID_UZYTKOWNIKA 
+)
+);
+\end{lstlisting}
+ 
+
+ 
   \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
 numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
  caption = Procedura hashująca hasło,
@@ -212,8 +230,8 @@ create or replace
 PROCEDURE hashowanie_hasla(haslo IN VARCHAR2, skrot OUT RAW)
 IS
 BEGIN
-skrot:= DBMS_CRYPTO.hash(UTL_I18N.STRING_TO_RAW(haslo, 'AL32UTF8'), 3);
-END;
+skrot:= DBMS_CRYPTO.hash(UTL_I18N.STRING_TO_RAW(haslo, 'AL32UTF8'),
+DBMS_CRYPTO.HASH_SH1 ); END;
 \end{lstlisting}
 
 
@@ -272,7 +290,7 @@ docs DBMS\_CRYPTO}\\
 \href{http://en.wikipedia.org/wiki/Symmetric-key_algorithm}{Symmetric-key
 algorithm}\\
 \href{http://en.wikipedia.org/wiki/Block_cipher_modes_of_operation}{Block
-chaining}
+chaining}\\ 
 \href{http://en.wikipedia.org/wiki/Cryptographic_hash_function}{Cryptographic
 hash function}
 
