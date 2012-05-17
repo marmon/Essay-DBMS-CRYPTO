@@ -21,12 +21,12 @@ Marek Lewandowski }
 
 \abstract{Esej wprowadza w najważniejsze zagadnienia pakietu, a
 następnie
-pokazuje widzę w praktyce na podstawie realnege przypadku zastosowania
+pokazuje widzę w praktyce na podstawie realnego przypadku zastosowania
 pakietu}
 
 \section{Wprowadzenie do pakietu}
 %TODO: to co napisane jest w tym paragrafie jest to wyrzucenia/rozrzucenia
-po
+%po
 %innych sekcjach
 Pakiet DBMS\_CRYPTO zapewnia interfejs do szyfrowania i odszyfrowywania
 danych w bazie danych oraz może być używany wraz z programami PL\/SQL
@@ -105,8 +105,8 @@ powinien być wygenerowany z pseudolosowego generatora, który używa
 symetrycznych jest: DES, 3DES, Twofish, Serpent, IDEA. Dane dzielone są na
 bloki, które podlegają szyfrowaniu. Różne algorytmy używają różnej
 wielkości bloków. AES używa bloków o długości 128 bitów.
-TODO dodać linki do tych szyfrów
-\item[]  
+%TODO dodać linki do tych szyfrów
+  
 \paragraph{ Główną zaletą} szyfrowania symetrycznego jest to, że to
 szyfrowanie jest o wiele szybsze w porównaniu do szyfrów asymetrycznych i
 jest równie bezpieczne zakładając, że poprawnie realizowana jest
@@ -141,29 +141,25 @@ pseudolosowego ciągu danych, który następnie pełni role strumienia
 szyfrującego, mieszanego z danymi za pomocą funkcji XOR
 \end{description}
 
-TODO: linki do wiki
+%TODO: linki do wiki
 
 \subsection{Generowanie klucza}
-TODO: Opis tego że pakiet nie generuje sam klucza ale może wygenerować
-sekwencje
- losową bajtów. Wzmiana o pakiecie DBMS\_RANDOM który może być do tego
- bardziej
- przydatny
-
 Pakiet DBMS\_CRYPTO nie generuje samemu klucza. Można natomiast
 skorzystać z funkcji \emph{RANDOMBYTES}, która wygeneruje losowy ciąg
 bajtów o zadanej długości. Funkcja \emph{RANDOMBYTES} bazuje na RSA
-X9.31 PRNG (Pseudo-RandomNumber Generator) i używa źródła entropii z
-parametru SQLNET.CRYPTO\_SEED w pliku sqlnet.ora. Wartością domyślną
-parametru jest:
-
- \lstset{language=SQL, basicstyle=\footnotesize, 
-numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
- caption = domyślna wartość inicjalizacyjna generator,
-frame=shadowbox, rulesepcolor=\color{SkyBlue}}
-\begin{lstlisting}
-qwertyuiopasdfghjkl;zxcvbnm,.s1
-\end{lstlisting}
+X9.31 PRNG (Pseudo-RandomNumber Generator).
+% NOTE: od wersji 11.2 to co poniżej zakomentowane jest nieprawdą.
+% i używa źródła entropii z
+% parametru SQLNET.CRYPTO\_SEED w pliku sqlnet.ora. Wartością domyślną
+% parametru jest:
+% 
+%  \lstset{language=SQL, basicstyle=\footnotesize, 
+% numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+%  caption = domyślna wartość inicjalizacyjna generator,
+% frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+% \begin{lstlisting}
+% qwertyuiopasdfghjkl;zxcvbnm,.s1
+% \end{lstlisting}
 
 \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
 numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
@@ -178,53 +174,106 @@ BEGIN
 END;
 \end{lstlisting}
 
-\subsection{Transport i przechowywanie klucza}
-TODO: Opis tego że pakiet nie daje niczego do transportu klucza i
-transport
-klucza od strony klienta jest niebezpieczny
+\subsection{Przechowywanie  i transport klucza}
+Odpowiedzialność za bezpieczne przechowywanie i transport kluczy spada na developerów/użytkowników.
 
 \section{Funkcje skrótu}
-TODO: co to jest i do czego służy, 3 cechy funkcji skrótu
+Służą do wyznaczenia krótkich sygnatur dla dowolnie dużych danych. 
+Zmiana danych wejściowych zupełnie zmienia wartość skrótu, co umożliwia weryfikację integralności wiadomości.
+\newline \newline
+Własności funkcji skrótu:
+\begin{enumerate}
+  \item dla danej wiadomości łatwo policzyć skrót,
+  \item mając skrót ciężko znaleźć wiadmość,
+  \item ciężko znaleźć inną wiadomość o takim samym skrócie co dana wiadomość.
+\end{enumerate}
 
 \subsection{Dostępne funkcje}
-TODO: lista dostępnych funkcji skrótu, dla każdej krótkie zdanie o
-bezpieczeństwie
+\begin{description}
+\item[SHA-1]Secure Hash Algorithm-- zaprojektowany przez NSA, prace chińskich naukowców doprowadziły wykrycia kolizji.
+\item[MD4] Message-Digest algorithm 4-- aktualnie jest już bezużyteczny, zastępowany zazwyczaj przez MD5.
+\item[MD5] Message-Digest algorithm 5-- popularna funkcja skrótu, która nie jest w pełni bezpieczna. W 2004 roku odkryto sposób na generowanie kolizji.
+\end{description}
 
-\subsection{Zastosowanie funkcji skrótu}
-TODO: opis zastosowania, np. zapewnienie INTEGRALNOŚCI oraz chronienie
-haseł
-userów (co będzie omówionym case'em wraz z przykładem i struktura
-danych)
-
-
-
-\section{Przypadek użycia - zabezpieczenie haseł użytkowników}
-  
+\section{Przypadek użycia - zabezpieczenie haseł użytkowników przy pomocy
+\mbox{SHA-1}}
+ Zaprezentujemy realny sposób przechowywania haseł użytkowników. Hasła nie będą
+ przechowywanie w postaci jawnej lecz będą przechowywane skróty haseł. Podczas
+ logowania, tworzony zostaje skrót hasła podanego przez użytkownika i sprawdzana
+ jest poprawność tego hasła przez porównanie otrzymanego skrótu z tym zapisanym
+ w bazie danych.
+ 
   \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
 numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
- caption = To jest opis kodu,
+ caption = Procedura hashująca hasło,
 frame=shadowbox, rulesepcolor=\color{SkyBlue}}
 \begin{lstlisting}
-CREATE OR REPLACE TRIGGER "KBD2A07"."PROJEKTY_AUTOINC"
-   before insert on "KBD2A07"."PROJEKTY"
-   for each row
-begin
-   if inserting then
-      if :NEW."ID_PROJEKTU" is null then
-         select PROJEKTY_ID_SEQ.nextval into :NEW."ID_PROJEKTU" from dual;
-      end if;
-   end if;
-end;
+create or replace
+PROCEDURE hashowanie_hasla(haslo IN VARCHAR2, skrot OUT RAW)
+IS
+BEGIN
+skrot:= DBMS_CRYPTO.hash(UTL_I18N.STRING_TO_RAW(haslo, 'AL32UTF8'), 3);
+END;
 \end{lstlisting}
-  
+
+
+  \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = Funkcja sprawdzająca poprawność hasła,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+CREATE OR REPLACE FUNCTION LOGOWANIE(ID_UZYT NUMBER, HASLO VARCHAR2) RETURN CHAR
+IS
+SKROTTEMP RAW(20);
+LICZBAWIERSZY NUMBER(2);
+BEGIN
+	HASHOWANIE_HASLA(HASLO, SKROTTEMP);
+
+	SELECT COUNT (*) INTO LICZBAWIERSZY
+	FROM SKROTY
+	WHERE ID_UZYTKOWNIKA = ID_UZYT
+      AND SKROT = SKROTTEMP;
+      
+	IF LICZBAWIERSZY = 0 THEN 
+		RETURN 'N';
+	ELSE
+		RETURN 'T';
+	END IF;
+END;
+\end{lstlisting}
+ 
+  \lstset{language=SQL, basicstyle=\footnotesize, numbers=left,
+numberstyle=\footnotesize, stepnumber=1, numbersep=10pt, breaklines=true,
+ caption = test rozwiązania,
+frame=shadowbox, rulesepcolor=\color{SkyBlue}}
+\begin{lstlisting}
+set serveroutput on format wraped
+declare
+ret char;
+begin
+ret := logowanie(4, 'pass4');
+dbms_output.put_line(ret);
+end;
+\end{lstlisting} 
+
 
 \section{Wady i zalety pakietu}
-TODO: opis tego że posiada w miare ok funkcje szyfrujace, nie ma
-natomiast
-dobrej funkcji skrótu, powinien miec SHA-2
-Poza tym wady takie jak to że nie generuje klucza
+Pakiet udostępnia nam użyteczne algorytmy szyfrowania symetrycznego, pozwala generować losowe dane, na podstawie których można utworzyć klucz oraz udostępnia funkcje skrótów.
+Stosunkowo niewielką wadą jest brak algorytmów asymetrycznych, gdyż duże ilości danych zazwyczaj szyfruje się symetrycznie. Poważną wadą jest jednak brak sposobu na bezpieczne przechowywanie oraz przesyłanie kluczy
+wykorzystywanych do szyfrowania symetrycznego. Odpowiedzialność za to spada na developerów.
 
 \section{Słowo końcowe}
-TODO: napisać jakieś ładne dwa zdania
+Stworzenie przez ORACLE pakietu wspomagającego zabezpieczenie danych to dobry pomysł. Wydaje nam się jednak, że właściwym byłoby poszerzenie jego zakresu 
+oraz częstsze uaktualnianie dostępnych funkcjonalności, np. wprowadzenie funkcji skrótu SHA-2.
+\\\\\\
+\emph{Źródła}:\\
+\href{http://docs.oracle.com/cd/E11882_01/appdev.112/e25788/d_crypto.htm}{oracle
+docs DBMS\_CRYPTO}\\
+\href{http://en.wikipedia.org/wiki/Symmetric-key_algorithm}{Symmetric-key
+algorithm}\\
+\href{http://en.wikipedia.org/wiki/Block_cipher_modes_of_operation}{Block
+chaining}
+\href{http://en.wikipedia.org/wiki/Cryptographic_hash_function}{Cryptographic
+hash function}
 
 \end{document}
